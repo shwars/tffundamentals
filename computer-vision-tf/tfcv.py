@@ -3,6 +3,9 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
+import glob
+import os
 
 def plot_convolution(data,t,title=''):
     fig, ax = plt.subplots(2,len(data)+1,figsize=(8,3))
@@ -30,3 +33,26 @@ def plot_results(hist):
     for x in ['loss','val_loss']:
         ax[1].plot(hist.history[x])
     plt.show()
+
+def display_dataset(dataset, labels=None, n=10, classes=None):
+    fig,ax = plt.subplots(1,n,figsize=(15,3))
+    for i in range(n):
+        ax[i].imshow(dataset[i])
+        ax[i].axis('off')
+        if classes is not None and labels is not None:
+            ax[i].set_title(classes[labels[i][0]])
+
+def check_image(fn):
+    try:
+        im = Image.open(fn)
+        im.verify()
+        return True
+    except:
+        return False
+    
+def check_image_dir(path):
+    for fn in glob.glob(path):
+        if not check_image(fn):
+            print("Corrupt image: {}".format(fn))
+            os.remove(fn)
+
