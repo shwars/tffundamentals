@@ -1,6 +1,7 @@
 # Tensorflow Computer Vision Helper
 
 import tensorflow as tf
+from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -46,13 +47,40 @@ def check_image(fn):
     try:
         im = Image.open(fn)
         im.verify()
-        return True
+        return im.format=='JPEG'
     except:
         return False
     
 def check_image_dir(path):
     for fn in glob.glob(path):
         if not check_image(fn):
-            print("Corrupt image: {}".format(fn))
+            print("Corrupt image or wrong format: {}".format(fn))
             os.remove(fn)
 
+def load_cats_dogs_dataset(batch_size=64):
+    if not os.path.exists('data/PetImages'):
+        print("Extracting the dataset")
+        with zipfile.ZipFile('data/kagglecatsanddogs_3367a.zip', 'r') as zip_ref:
+            zip_ref.extractall('data')
+    print("Checking dataset")
+    check_image_dir('data/PetImages/Cat/*.jpg')
+    check_image_dir('data/PetImages/Dog/*.jpg')
+    data_dir = 'data/PetImages'
+    print("Loading dataset")
+    ds_train = keras.preprocessing.image_dataset_from_directory(
+        data_dir,
+        validation_split = 0.2,
+        subset = 'training',
+        seed = 13,
+        image_size = (224,224),
+        batch_size = batch_size
+    )
+    ds_test = keras.preprocessing.image_dataset_from_directory(
+        data_dir,
+        validation_split = 0.2,
+        subset = 'validation',
+        seed = 13,
+        image_size = (224,224),
+        batch_size = batch_size
+    )
+    return ds_train,ds_test
